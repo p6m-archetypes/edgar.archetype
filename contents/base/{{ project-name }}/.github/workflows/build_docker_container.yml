@@ -34,7 +34,7 @@ on:
       DOCKER_REPO:
         required: true
         type: string
-      VENTURE_NAME:
+      SOLUTION_NAME:
         required: true
         type: string
       ORG_NAME:
@@ -78,7 +78,7 @@ jobs:
       - name: Install dependencies
         run: |
           poetry --version
-          poetry config http-basic.${{'{'}}{ inputs.ORG_NAME }}_${{'{'}}{ inputs.VENTURE_NAME }}_pypi_local  ${{'{'}}{ secrets.ARTIFACTORY_USERNAME }}  ${{'{'}}{ secrets.ARTIFACTORY_IDENTITY_TOKEN }}
+          poetry config http-basic.${{'{'}}{ inputs.ORG_NAME }}_${{'{'}}{ inputs.SOLUTION_NAME }}_pypi_local  ${{'{'}}{ secrets.ARTIFACTORY_USERNAME }}  ${{'{'}}{ secrets.ARTIFACTORY_IDENTITY_TOKEN }}
           poetry install --verbose
 
       - name: Setup Node
@@ -119,7 +119,7 @@ jobs:
       - name: Publish to Private PyPI
         run: |
           poetry version ${{'{'}}{ steps.TAG.outputs.version }}
-          poetry --build publish -r ${{'{'}}{ inputs.ORG_NAME }}_${{'{'}}{ inputs.VENTURE_NAME }}_pypi_push -u ${{'{'}}{ secrets.ARTIFACTORY_USERNAME }} -p ${{'{'}}{ secrets.ARTIFACTORY_IDENTITY_TOKEN }}
+          poetry --build publish -r ${{'{'}}{ inputs.ORG_NAME }}_${{'{'}}{ inputs.SOLUTION_NAME }}_pypi_push -u ${{'{'}}{ secrets.ARTIFACTORY_USERNAME }} -p ${{'{'}}{ secrets.ARTIFACTORY_IDENTITY_TOKEN }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -156,7 +156,7 @@ jobs:
             artifactory_username=${{'{'}}{ secrets.ARTIFACTORY_USERNAME }}
             artifactory_password=${{'{'}}{ secrets.ARTIFACTORY_IDENTITY_TOKEN }}
             org_name=${{'{'}}{ inputs.ORG_NAME }}
-            venture_name=${{'{'}}{ inputs.VENTURE_NAME }} 
+            solution_name=${{'{'}}{ inputs.SOLUTION_NAME }} 
 
       - name: Record Summary
         run: |

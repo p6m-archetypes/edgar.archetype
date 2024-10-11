@@ -20,6 +20,6 @@ jobs:
     with:
       ARTIFACTORY_REGISTRY: "p6m-dev.jfrog.io"
       APPS: {{ project-name }} 
-      DOCKER_REPO: {{ org-name }}-{{ venture-name }}-docker/applications
-      VENTURE_NAME: {{ venture_name }}
+      DOCKER_REPO: {{ org-name }}-{{ solution-name }}-docker/applications
+      SOLUTION_NAME: {{ solution_name }}
       ORG_NAME: {{ org_name }}

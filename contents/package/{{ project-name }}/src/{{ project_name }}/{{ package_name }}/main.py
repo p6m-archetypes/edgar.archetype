@@ -3,7 +3,7 @@ import sys
 import logging
 from datetime import datetime
 from .driver import submit
-from driver_library_{{ org_name }}_{{ venture_name }}.driver_library.utils.core.environment import CheckEnvironment
+from driver_library_{{ org_name }}_{{ solution_name }}.driver_library.utils.core.environment import CheckEnvironment
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(levelname)s %(lineno)d: %(message)s')

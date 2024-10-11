@@ -7,8 +7,8 @@ import pandas as pd
 import pandasql as ps
 import requests
 import logging
-from driver_library_{{ org_name }}_{{ venture_name }}.driver_library.utils.s3.s3_object_store import S3
-from driver_library_{{ org_name }}_{{ venture_name }}.driver_library.utils.converters.edgarhtml2text import HTMLiXBRL2Text
+from driver_library_{{ org_name }}_{{ solution_name }}.driver_library.utils.s3.s3_object_store import S3
+from driver_library_{{ org_name }}_{{ solution_name }}.driver_library.utils.converters.edgarhtml2text import HTMLiXBRL2Text
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(levelname)s %(name)s %(funcName)s line# %(lineno)d: %(message)s')

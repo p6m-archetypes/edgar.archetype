@@ -8,7 +8,7 @@ metadata:
     p6m.dev/env-name: dev
     p6m.dev/env-type: dev
     p6m.dev/org-prefix: {{ org-name }}
-    p6m.dev/org-suffix: {{ venture-name }}
+    p6m.dev/org-suffix: {{ solution-name }}
     p6m.dev/shared: "false"
   name: data
   namespace: airflow

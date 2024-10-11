@@ -27,7 +27,7 @@ boto3 = "^1.34.73"
 pandas = "^2.2.1"
 pandasql = "^0.7.3"
 requests = "^2.32.2"
-driver_library_p6m_data_platform = {version = "^1.0.4", source = "{{ org_name }}_{{ venture_name }}_pypi_local"}
+driver_library_p6m_data_platform = {version = "^1.0.4", source = "{{ org_name }}_{{ solution_name }}_pypi_local"}
 {% endif %}
 
 
@@ -36,18 +36,18 @@ pytest = "^7.4.4"
 flake8 = "^6.1.0"
 
 [[tool.poetry.source]]
-name = "{{ org_name }}_{{ venture_name }}_pypi"
-url = "https://p6m-dev.jfrog.io/artifactory/api/pypi/{{ org-name }}-{{ venture-name }}-pypi/simple"
+name = "{{ org_name }}_{{ solution_name }}_pypi"
+url = "https://p6m-dev.jfrog.io/artifactory/api/pypi/{{ org-name }}-{{ solution-name }}-pypi/simple"
 priority = "supplemental"
 
 [[tool.poetry.source]]
-name = "{{ org_name }}_{{ venture_name }}_pypi_local"
-url = "https://p6m-dev.jfrog.io/artifactory/api/pypi/{{ org-name }}-{{ venture-name }}-pypi-local/simple"
+name = "{{ org_name }}_{{ solution_name }}_pypi_local"
+url = "https://p6m-dev.jfrog.io/artifactory/api/pypi/{{ org-name }}-{{ solution-name }}-pypi-local/simple"
 priority = "supplemental"
 
 [[tool.poetry.source]]
-name = "{{ org_name }}_{{ venture_name }}_pypi_push"
-url = "https://p6m-dev.jfrog.io/artifactory/api/pypi/{{ org-name }}-{{ venture-name }}-pypi"
+name = "{{ org_name }}_{{ solution_name }}_pypi_push"
+url = "https://p6m-dev.jfrog.io/artifactory/api/pypi/{{ org-name }}-{{ solution-name }}-pypi"
 priority = "supplemental"
 
 [tool.pytest.ini_options]
