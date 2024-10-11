@@ -1,0 +1,10 @@
+# configmap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: edgar-cmap-dev-{{ org-name }}-{{ venture-name }}
+data:
+  bucket: "data-dev-{{ region-name }}-{{ org-name }}-{{ venture-name }}"
+  user_agent: "user_email@p6m.dev"
+  scheduled_form_type: "10-Q"
+  scheduled_from_date: "2024-04-01"

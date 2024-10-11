@@ -1,0 +1,62 @@
+[tool.poetry]
+name = "{{ project-name }}"
+version = "1.0.0"
+description = "{{ project-title }}"
+
+authors = [
+    "{{ author_full }}",
+    "Archetect <archetect@github.io>",
+]
+
+readme = "README.md"
+packages = [
+    { include = "{{ project_name }}", from = "src" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+# Common
+pyyaml = "^6.0"
+
+{% if "edgar" in features -%}
+
+# edgar
+
+boto3 = "^1.34.73"
+pandas = "^2.2.1"
+pandasql = "^0.7.3"
+requests = "^2.32.2"
+driver_library_p6m_data_platform = {version = "^1.0.4", source = "{{ org_name }}_{{ venture_name }}_pypi_local"}
+{% endif %}
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.4"
+flake8 = "^6.1.0"
+
+[[tool.poetry.source]]
+name = "{{ org_name }}_{{ venture_name }}_pypi"
+url = "https://p6m-dev.jfrog.io/artifactory/api/pypi/{{ org-name }}-{{ venture-name }}-pypi/simple"
+priority = "supplemental"
+
+[[tool.poetry.source]]
+name = "{{ org_name }}_{{ venture_name }}_pypi_local"
+url = "https://p6m-dev.jfrog.io/artifactory/api/pypi/{{ org-name }}-{{ venture-name }}-pypi-local/simple"
+priority = "supplemental"
+
+[[tool.poetry.source]]
+name = "{{ org_name }}_{{ venture_name }}_pypi_push"
+url = "https://p6m-dev.jfrog.io/artifactory/api/pypi/{{ org-name }}-{{ venture-name }}-pypi"
+priority = "supplemental"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.poetry.scripts]
+main = "{{ project_name }}.main:main"
+docker-build = "manage.docker:docker_build"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

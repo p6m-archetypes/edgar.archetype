@@ -1,0 +1,12 @@
+---
+description: "Edgar Archetype"
+authors: ["Nachappa AP"]
+languages: ["python"]
+frameworks: []
+tags: []
+
+requires:
+  archetect: "2.0.0-ALPHA.10"
+
+components:
+  data-prompts: git@github.com:p6m-dev/data-prompts.archetype.git

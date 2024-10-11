@@ -1,0 +1,197 @@
+name: Dev Build & Deploy
+
+on:
+  workflow_call:
+    secrets:
+      ARTIFACTORY_TOKEN:
+        required: true
+      ARTIFACTORY_USERNAME:
+        required: true
+      ARTIFACTORY_IDENTITY_TOKEN:
+        required: true
+      UPDATE_MANIFEST_TOKEN:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+    inputs:
+      ARTIFACTORY_REGISTRY:
+        required: true
+        type: string
+      AWS_ACCOUNT_ID:
+        required: false
+        type: string
+      AWS_TFSTATE_BUCKET:
+        required: false
+        type: string
+      AWS_REGION:
+        required: false
+        type: string
+      APPS:
+        required: true
+        type: string
+      DOCKER_REPO:
+        required: true
+        type: string
+      VENTURE_NAME:
+        required: true
+        type: string
+      ORG_NAME:
+        required: true
+        type: string
+
+env:
+  ARTIFACTORY_USERNAME: ${{'{'}}{ secrets.ARTIFACTORY_USERNAME }}
+  ARTIFACTORY_IDENTITY_TOKEN: ${{'{'}}{ secrets.ARTIFACTORY_IDENTITY_TOKEN }}
+  UPDATE_MANIFEST_TOKEN: ${{'{'}}{ secrets.UPDATE_MANIFEST_TOKEN }}
+  ARTIFACTORY_TOKEN: ${{'{'}}{ secrets.ARTIFACTORY_TOKEN }}
+  ARTIFACTORY_REGISTRY: ${{'{'}}{ inputs.ARTIFACTORY_REGISTRY }}
+  INPUT_GITHUB_TOKEN: ${{'{'}}{ secrets.GITHUB_TOKEN }}
+  AWS_DEFAULT_REGION: ${{'{'}}{ inputs.AWS_REGION }}
+  AWS_REGION: ${{'{'}}{ inputs.AWS_REGION }}
+  AWS_DEFAULT_OUTPUT: json
+  AWS_ACCESS_KEY_ID: ${{'{'}}{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{'{'}}{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    outputs:
+      digest: ${{'{'}}{ steps.docker_build.outputs.digest }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.11' # Specify your Python version
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python -
+
+      - name: Install dependencies
+        run: |
+          poetry --version
+          poetry config http-basic.${{'{'}}{ inputs.ORG_NAME }}_${{'{'}}{ inputs.VENTURE_NAME }}_pypi_local  ${{'{'}}{ secrets.ARTIFACTORY_USERNAME }}  ${{'{'}}{ secrets.ARTIFACTORY_IDENTITY_TOKEN }}
+          poetry install --verbose
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Semver
+        run: npm install -g semver
+
+      - name: Get Tag Version
+        id: TAG
+        run: |
+          version=$(semver -i patch $(git tag | grep -E 'v*$' | sort -t "." -k1,1n -k2,2n -k3,3n | tail -n1) || echo "1.0.0")
+          echo "value=$version"
+          echo "value=$version" >> $GITHUB_OUTPUT
+          echo "tag_name=v$version"
+          echo "tag_name=v$version" >> $GITHUB_OUTPUT
+
+      - name: Git Commit & Tag
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          poetry version ${{'{'}}{ steps.TAG.outputs.value }}
+          git add .
+          git commit --allow-empty -am "Set version to ${{'{'}}{ steps.TAG.outputs.tag_name }}"
+          # Check if the tag already exists
+          if git ls-remote --exit-code --tags origin "refs/tags/${{'{'}}{ steps.TAG.outputs.tag_name }}" >/dev/null 2>&1; then
+            echo "Tag already exists, skipping tag creation"
+          else
+            echo "Tag is not found, entered into else block"
+            git tag -a ${{'{'}}{ steps.TAG.outputs.tag_name }} -m "Release ${{'{'}}{ steps.TAG.outputs.value }}"
+            git push origin ${{'{'}}{ steps.TAG.outputs.tag_name }}
+            git push origin main
+          fi
+          
+
+      - name: Publish to Private PyPI
+        run: |
+          poetry version ${{'{'}}{ steps.TAG.outputs.version }}
+          poetry --build publish -r ${{'{'}}{ inputs.ORG_NAME }}_${{'{'}}{ inputs.VENTURE_NAME }}_pypi_push -u ${{'{'}}{ secrets.ARTIFACTORY_USERNAME }} -p ${{'{'}}{ secrets.ARTIFACTORY_IDENTITY_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Artifactory Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{'{'}}{ inputs.ARTIFACTORY_REGISTRY }}
+          username: ${{'{'}}{ secrets.ARTIFACTORY_USERNAME }}
+          password: ${{'{'}}{ secrets.ARTIFACTORY_IDENTITY_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{'{'}}{ inputs.ARTIFACTORY_REGISTRY }}/${{'{'}}{inputs.DOCKER_REPO}}/${{'{'}}{ inputs.APPS }}-server
+          tags: |
+            type=raw,value=${{'{'}}{ steps.TAG.outputs.tag_name }}
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{'{'}}{version}} 
+            type=semver,pattern={{'{'}}{major}}.{{'{'}}{minor}}
+            type=sha
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        id: build-push
+        with:
+          platforms: linux/amd64
+          push: true
+          tags: ${{'{'}}{ steps.meta.outputs.tags }}
+          build-args: |
+            artifactory_username=${{'{'}}{ secrets.ARTIFACTORY_USERNAME }}
+            artifactory_password=${{'{'}}{ secrets.ARTIFACTORY_IDENTITY_TOKEN }}
+            org_name=${{'{'}}{ inputs.ORG_NAME }}
+            venture_name=${{'{'}}{ inputs.VENTURE_NAME }} 
+
+      - name: Record Summary
+        run: |
+          echo "### Docker Tags" >> $GITHUB_STEP_SUMMARY
+          echo "${{'{'}}{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Prepare Artifact
+        run: |
+          echo "${{'{'}}{ steps.build-push.outputs.digest }}" >> digest.txt
+      
+
+      # this section is necessary for ArgoCD to run
+      - name: Trigger Update Image Digest
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo github.ref= ${{'{'}}{ github.ref }}
+          echo digest = ${{'{'}}{ steps.build-push.outputs.digest }}
+          echo platform_dispatch_url = ${{'{'}}{ vars.PLATFORM_DISPATCH_URL }}
+          curl -X POST \
+            -H "Accept: application/vnd.github.everest-preview+json" \
+            -H "Authorization: token ${{'{'}}{ secrets.UPDATE_MANIFEST_TOKEN }}" \
+            ${{'{'}}{ vars.PLATFORM_DISPATCH_URL }} \
+            --fail-with-body \
+            -d "{\"event_type\": \"update-digest\", \"client_payload\": {\"repository\": \"${GITHUB_REPOSITORY}\", \"directory_name\": \"$(basename ${GITHUB_REPOSITORY})\", \"environment_dir\": \"dev\", \"digest\": \"${{'{'}}{ steps.build-push.outputs.digest }}\"}}"
+
+
+
+      - uses: ncipollo/release-action@v1.12.0
+        with:
+          name: Version ${{'{'}}{ steps.TAG.outputs.value }}
+          tag: ${{'{'}}{ steps.TAG.outputs.tag_name }}
+          makeLatest: true
+          artifacts: "digest.txt"
+          removeArtifacts: true
+          generateReleaseNotes: true
+          body: |
+            Docker Digest: `${{'{'}}{ steps.build-push.outputs.digest }}`
+            Docker Tags: `${{'{'}}{ steps.meta.outputs.tags }}`

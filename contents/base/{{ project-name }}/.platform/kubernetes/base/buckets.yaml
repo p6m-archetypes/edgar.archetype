@@ -1,0 +1,16 @@
+apiVersion: storage.p6m.dev/v1alpha1
+kind: S3Bucket
+metadata:
+  labels:
+    p6m.dev/app: airflow
+    p6m.dev/aws-region: {{ region-name }}
+    p6m.dev/component: bucket
+    p6m.dev/env-name: dev
+    p6m.dev/env-type: dev
+    p6m.dev/org-prefix: {{ org-name }}
+    p6m.dev/org-suffix: {{ venture-name }}
+    p6m.dev/shared: "false"
+  name: data
+  namespace: airflow
+spec:
+  region: {{ region-name }}

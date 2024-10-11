@@ -1,0 +1,25 @@
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+      - "README.md"
+
+name: 1. Dev Build & push
+run-name: Dev Build & push
+
+jobs:
+  build_and_deploy:
+    uses: ./.github/workflows/build_docker_container.yml
+    secrets:
+      ARTIFACTORY_USERNAME: ${{'{'}}{ secrets.ARTIFACTORY_USERNAME }}
+      ARTIFACTORY_IDENTITY_TOKEN: ${{'{'}}{ secrets.ARTIFACTORY_IDENTITY_TOKEN }}
+      UPDATE_MANIFEST_TOKEN: ${{'{'}}{ secrets.UPDATE_MANIFEST_TOKEN }}
+      ARTIFACTORY_TOKEN: ${{'{'}}{ secrets.ARTIFACTORY_TOKEN }}
+    with:
+      ARTIFACTORY_REGISTRY: "p6m-dev.jfrog.io"
+      APPS: {{ project-name }} 
+      DOCKER_REPO: {{ org-name }}-{{ venture-name }}-docker/applications
+      VENTURE_NAME: {{ venture_name }}
+      ORG_NAME: {{ org_name }}
