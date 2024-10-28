@@ -6,6 +6,8 @@ on:
       - "docs/**"
       - "README.md"
 
+permissions: write-all
+
 name: 1. Dev Build & push
 run-name: Dev Build & push
 

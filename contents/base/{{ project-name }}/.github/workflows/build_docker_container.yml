@@ -1,3 +1,5 @@
+permissions: write-all
+
 name: Dev Build & Deploy
 
 on:
