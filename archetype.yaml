@@ -9,4 +9,4 @@ requires:
   archetect: "2.0.0-ALPHA.10"
 
 components:
-  data-prompts: git@github.com:p6m-dev/data-prompts.archetype.git
+  data-prompts: git@github.com:p6m-archetypes/data-prompts.archetype.gi
