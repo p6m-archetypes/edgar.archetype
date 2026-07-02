@@ -15,10 +15,10 @@ jobs:
   build_and_deploy:
     uses: ./.github/workflows/build_docker_container.yml
     secrets:
-      ARTIFACTORY_USERNAME: ${{'{'}}{ secrets.ARTIFACTORY_USERNAME }}
-      ARTIFACTORY_IDENTITY_TOKEN: ${{'{'}}{ secrets.ARTIFACTORY_IDENTITY_TOKEN }}
-      UPDATE_MANIFEST_TOKEN: ${{'{'}}{ secrets.UPDATE_MANIFEST_TOKEN }}
-      ARTIFACTORY_TOKEN: ${{'{'}}{ secrets.ARTIFACTORY_TOKEN }}
+      ARTIFACTORY_USERNAME: ${{'{'}}{ secrets.P6M_ARTIFACTORY_USERNAME }}
+      ARTIFACTORY_IDENTITY_TOKEN: ${{'{'}}{ secrets.P6M_ARTIFACTORY_IDENTITY_TOKEN }}
+      UPDATE_MANIFEST_TOKEN: ${{'{'}}{ secrets.P6M_UPDATE_MANIFEST_TOKEN }}
+      ARTIFACTORY_TOKEN: ${{'{'}}{ secrets.P6M_ARTIFACTORY_TOKEN }}
     with:
       ARTIFACTORY_REGISTRY: "p6m.jfrog.io"
       APPS: {{ project-name }} 

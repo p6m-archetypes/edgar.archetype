@@ -52,8 +52,8 @@ if switch_enabled("debug-context") {
     print();
 }
 
-context["github-artifactory_username"] = "${{ secrets.ARTIFACTORY_USERNAME }}";
-context["github-artifactory_id_token"] = "${{ secrets.ARTIFACTORY_IDENTITY_TOKEN }}";
+context["github-artifactory_username"] = "${{ secrets.P6M_ARTIFACTORY_USERNAME }}";
+context["github-artifactory_id_token"] = "${{ secrets.P6M_ARTIFACTORY_IDENTITY_TOKEN }}";
 
 render(Directory("contents/base"), context);
 
